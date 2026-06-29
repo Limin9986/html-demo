@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUPUMALL - 运营管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#ffffff',
+                        foreground: '#262626',
+                        muted: '#f5f5f5',
+                        'muted-foreground': '#8c8c8c',
+                        card: '#ffffff',
+                        border: '#f0f0f0',
+                        primary: '#1890ff',
+                        success: '#52c41a',
+                        warning: '#faad14',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .sidebar-active { background-color: #1890ff !important; color: white !important; font-weight: 500; }
+        .zebra-row:nth-child(even) { background-color: rgba(24, 144, 255, 0.02); }
+    </style>
+</head>
+<body class="bg-muted text-foreground antialiased overflow-hidden h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-52 bg-[#00162a] flex-shrink-0 flex flex-col">
+        <div class="h-[48px] bg-[#002242] flex items-center px-4">
+            <span class="text-white font-bold tracking-wider text-lg">PUPUMALL</span>
+        </div>
+        <nav class="flex-1 mt-4 px-2 space-y-1">
+            <a href="#" onclick="switchMenu('dashboard')" class="flex items-center px-3 py-2 rounded-sm text-white/65 hover:text-white hover:bg-white/5 transition-colors text-sm sidebar-item" id="menu-dashboard">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                工作台
+            </a>
+            <div class="px-3 py-2 text-xs text-white/30 font-bold uppercase tracking-wider">模板管理</div>
+            <a href="#" onclick="switchMenu('main-template')" class="flex items-center px-3 py-2 rounded-sm text-white/65 hover:text-white hover:bg-white/5 transition-colors text-sm sidebar-item sidebar-active" id="menu-main-template">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                业态主模板
+            </a>
+            <a href="#" onclick="switchMenu('sub-template')" class="flex items-center px-3 py-2 rounded-sm text-white/65 hover:text-white hover:bg-white/5 transition-colors text-sm sidebar-item" id="menu-sub-template">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                子规则模板
+            </a>
+            <div class="px-3 py-2 text-xs text-white/30 font-bold uppercase tracking-wider">系统设置</div>
+            <a href="#" onclick="switchMenu('meta-model')" class="flex items-center px-3 py-2 rounded-sm text-white/65 hover:text-white hover:bg-white/5 transition-colors text-sm sidebar-item" id="menu-meta-model">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                元模型管理
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0">
+        <!-- Top Nav -->
+        <header class="h-[48px] bg-card border-b border-border flex items-center justify-between px-4 z-10">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <span class="text-foreground font-medium text-sm">菜单总览</span>
+            </div>
+            <div class="flex items-center gap-5">
+                <div class="flex items-center border border-border rounded-sm h-[26px] px-2 text-xs text-muted-foreground bg-muted/10 w-48">
+                    <input type="text" placeholder="知识库搜索" class="bg-transparent outline-none w-full">
+                    <div class="border-l border-border h-full ml-2 pl-2 flex items-center">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 text-muted-foreground">
+                    <svg class="w-4 h-4 hover:text-foreground cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path></svg>
+                    <svg class="w-4 h-4 hover:text-foreground cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="relative">
+                        <svg class="w-4 h-4 hover:text-foreground cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-[8px] text-white rounded-full w-2.5 h-2.5 flex items-center justify-center">3</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium">GZ-TEST00-朴朴同学</span>
+                    <div class="w-6 h-6 bg-[#52c41a] rounded-full flex items-center justify-center text-white text-[10px]">朴</div>
+                    <span class="text-[10px] bg-muted px-1 rounded text-muted-foreground border border-border">管理员</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Breadcrumb & Title -->
+        <div class="bg-card px-4 py-3">
+            <nav class="text-[10px] text-muted-foreground mb-1 flex items-center gap-1">
+                <span>PUPUMALL</span>
+                <span>/</span>
+                <span>模板中心</span>
+                <span>/</span>
+                <span class="text-foreground" id="current-breadcrumb">业态主模板</span>
+            </nav>
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold tracking-wide" id="page-title">业态主模板管理</h1>
+                <div id="action-buttons">
+                    <button onclick="openModal('add-main')" class="bg-[#1890ff] text-white px-4 py-1.5 rounded-sm text-sm hover:bg-[#1890ff]/90 transition-colors flex items-center gap-2 shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        新增主模板
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-auto p-4 space-y-4 bg-muted">
+            <!-- Filter Form -->
+            <div id="filter-form-container" class="bg-card p-4 rounded-sm shadow-sm">
+                <div class="flex flex-wrap gap-x-6 gap-y-4">
+                    <div class="flex items-center gap-2">
+                        <label class="w-[72px] text-right text-foreground text-sm">所属业态</label>
+                        <select class="border border-border rounded-sm h-[32px] px-2 text-sm w-40 focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option>全部</option>
+                            <option>零售</option>
+                            <option>餐饮</option>
+                            <option>原料供给</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="w-[72px] text-right text-foreground text-sm">经营模式</label>
+                        <select class="border border-border rounded-sm h-[32px] px-2 text-sm w-40 focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option>全部</option>
+                            <option>自营</option>
+                            <option>联营购销</option>
+                            <option>联营抽佣</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="w-[72px] text-right text-foreground text-sm">模板名称</label>
+                        <input type="text" placeholder="输入名称关键字" class="border border-border rounded-sm h-[32px] px-2 text-sm w-48 focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                    </div>
+                    <div class="flex-1 flex justify-end gap-3">
+                        <button class="px-4 py-1.5 text-sm text-foreground border border-border rounded-sm hover:text-[#1890ff] hover:border-[#1890ff] transition-colors">重置</button>
+                        <button class="px-4 py-1.5 text-sm bg-[#1890ff] text-white rounded-sm hover:bg-[#1890ff]/90 transition-colors">查询</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-card rounded-sm shadow-sm overflow-hidden">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead id="table-head" class="bg-muted/30 text-muted-foreground border-b border-border">
+                        <tr>
+                            <th class="px-4 py-3 font-medium">模板名称</th>
+                            <th class="px-4 py-3 font-medium">所属业态</th>
+                            <th class="px-4 py-3 font-medium">经营模式</th>
+                            <th class="px-4 py-3 font-medium">绑定商家数</th>
+                            <th class="px-4 py-3 font-medium">版本号</th>
+                            <th class="px-4 py-3 font-medium">状态</th>
+                            <th class="px-4 py-3 font-medium">更新时间</th>
+                            <th class="px-4 py-3 font-medium text-right">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Sample Row 1 -->
+                        <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                            <td class="px-4 py-3 font-medium">餐饮-联营购销-通用模板</td>
+                            <td class="px-4 py-3 text-muted-foreground">餐饮</td>
+                            <td class="px-4 py-3 text-muted-foreground">联营购销</td>
+                            <td class="px-4 py-3">128</td>
+                            <td class="px-4 py-3">V1.0.4</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                    <span>已生效</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-muted-foreground">2026-06-20 14:30</td>
+                            <td class="px-4 py-3 text-right">
+                                <span onclick="openModal('edit-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                                <span onclick="openModal('detail-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                            </td>
+                        </tr>
+                        <!-- Sample Row 2 -->
+                        <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                            <td class="px-4 py-3 font-medium">零售-自营-前置仓标准</td>
+                            <td class="px-4 py-3 text-muted-foreground">零售</td>
+                            <td class="px-4 py-3 text-muted-foreground">自营</td>
+                            <td class="px-4 py-3">54</td>
+                            <td class="px-4 py-3">V2.1.0</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                    <span>已生效</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-muted-foreground">2026-06-25 09:15</td>
+                            <td class="px-4 py-3 text-right">
+                                <span onclick="openModal('edit-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                                <span onclick="openModal('detail-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                            </td>
+                        </tr>
+                        <!-- Sample Row 3 -->
+                        <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                            <td class="px-4 py-3 font-medium">原料-大宗采买-批发商模板</td>
+                            <td class="px-4 py-3 text-muted-foreground">原料供给</td>
+                            <td class="px-4 py-3 text-muted-foreground">自营</td>
+                            <td class="px-4 py-3">0</td>
+                            <td class="px-4 py-3">V1.0.0</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#faad14]"></span>
+                                    <span>审批中</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-muted-foreground">2026-06-28 11:00</td>
+                            <td class="px-4 py-3 text-right">
+                                <span class="text-muted-foreground cursor-not-allowed mr-3">编辑</span>
+                                <span onclick="openModal('detail-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- Pagination -->
+                <div class="px-4 py-3 flex items-center justify-between border-t border-border bg-muted/5">
+                    <span class="text-xs text-muted-foreground">共 32 条数据</span>
+                    <div class="flex gap-1">
+                        <button class="w-8 h-8 flex items-center justify-center border border-border rounded-sm hover:border-[#1890ff] hover:text-[#1890ff] transition-colors text-xs">1</button>
+                        <button class="w-8 h-8 flex items-center justify-center border border-border rounded-sm hover:border-[#1890ff] hover:text-[#1890ff] transition-colors text-xs bg-[#1890ff] text-white">2</button>
+                        <button class="w-8 h-8 flex items-center justify-center border border-border rounded-sm hover:border-[#1890ff] hover:text-[#1890ff] transition-colors text-xs">3</button>
+                        <button class="w-8 h-8 flex items-center justify-center border border-border rounded-sm hover:border-[#1890ff] hover:text-[#1890ff] transition-colors text-xs">...</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Section -->
+    <!-- Modal for Adding Main Template -->
+    <div id="modal-add-main" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[800px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <h2 class="text-lg font-bold">新增业态主模板</h2>
+                <button onclick="closeModal('add-main')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-6">
+                <!-- Basic Info -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">业态类型 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option value="">请选择</option>
+                            <option>零售</option>
+                            <option>餐饮</option>
+                            <option>原料供给</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">经营模式 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option value="">请选择</option>
+                            <option>自营</option>
+                            <option>联营购销</option>
+                            <option>联营抽佣</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 space-y-1">
+                        <label class="block text-sm font-medium text-foreground">模板名称 <span class="text-red-500">*</span></label>
+                        <input type="text" placeholder="建议格式：业态-模式-描述" class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                    </div>
+                </div>
+
+                <!-- Template Configuration Elements (Constraints) -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-border pb-2">
+                        <h3 class="font-bold text-sm">模板配置要素 (约束范围)</h3>
+                        <span class="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">模型约束</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6">
+                        <!-- Business Partner Model -->
+                        <div class="space-y-3 p-3 bg-muted/20 rounded-sm">
+                            <div class="flex items-center gap-2 border-b border-border/50 pb-1 mb-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-xs font-bold">业务伙伴模型</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">层级</label>
+                                    <input type="number" placeholder="如：3" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">主体挂载层级</label>
+                                    <input type="number" placeholder="如：3" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">业务伙伴身份</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>供应商</option>
+                                        <option>商家</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">合作方式</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>自营</option>
+                                        <option>联营购销</option>
+                                        <option>联营抽佣</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Model -->
+                        <div class="space-y-3 p-3 bg-muted/20 rounded-sm">
+                            <div class="flex items-center gap-2 border-b border-border/50 pb-1 mb-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-xs font-bold">商品模型</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">可供财务类别</label>
+                                    <input type="text" placeholder="如：1, 2, 3, 4" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">商品经营模式</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>自营</option>
+                                        <option>联营购销</option>
+                                        <option>联营抽佣</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">品项关系</label>
+                                    <input type="text" placeholder="选填" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Virtual Org Model -->
+                        <div class="space-y-3 p-3 bg-muted/20 rounded-sm">
+                            <div class="flex items-center gap-2 border-b border-border/50 pb-1 mb-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-xs font-bold">虚拟组织模型</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">是否创建虚拟组织</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>是</option>
+                                        <option>否</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">虚拟组织根节点</label>
+                                    <input type="text" placeholder="如：实体组织5级" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">虚拟组织层级</label>
+                                    <input type="number" placeholder="如：8" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">是否绑定供应商</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>是</option>
+                                        <option>否</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-template Selection (N:N) -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-border pb-2">
+                        <h3 class="font-bold text-sm">关联子规则模板</h3>
+                        <span class="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">多对多关联</span>
+                    </div>
+                    
+                    <!-- Sub-template Type Groups -->
+                    <div class="space-y-4">
+                        <!-- Group 1 -->
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-sm font-medium">商品/品项规则 (R1)</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pl-3">
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary">
+                                    <span class="text-xs">餐饮包材通用领用规则</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary">
+                                    <span class="text-xs">生鲜品类准入标准</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Group 2 -->
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-sm font-medium">权限/岗位分发 (R2)</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pl-3">
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary" checked>
+                                    <span class="text-xs">商家员工标准功能包 [通用]</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary">
+                                    <span class="text-xs">财务结算对账权限</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Script Section -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-border pb-2">
+                        <h3 class="font-bold text-sm">模板自定义脚本</h3>
+                        <span class="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">逻辑约束</span>
+                    </div>
+                    <div class="space-y-1">
+                        <textarea placeholder="通过自定义脚本实现，约束模板特殊内容" class="w-full border border-border rounded-sm p-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none h-32 font-mono bg-muted/10" spellcheck="false"></textarea>
+                        <p class="text-[10px] text-muted-foreground italic">注：脚本将作用于入驻流程的动态逻辑校验</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end gap-3">
+                <button onclick="closeModal('add-main')" class="px-6 py-2 text-sm border border-border rounded-sm hover:text-primary hover:border-primary transition-colors">取消</button>
+                <button onclick="closeModal('add-main')" class="px-6 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">提交审批</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Main Template -->
+    <div id="modal-edit-main" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[800px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold">编辑业态主模板</h2>
+                    <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">V1.0.4</span>
+                </div>
+                <button onclick="closeModal('edit-main')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-6">
+                <!-- Basic Info -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">业态类型 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option>零售</option>
+                            <option selected>餐饮</option>
+                            <option>原料供给</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">经营模式 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option>自营</option>
+                            <option selected>联营购销</option>
+                            <option>联营抽佣</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 space-y-1">
+                        <label class="block text-sm font-medium text-foreground">模板名称 <span class="text-red-500">*</span></label>
+                        <input type="text" value="餐饮-联营购销-通用模板" class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                    </div>
+                </div>
+
+                <!-- Template Configuration Elements (Constraints) -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-border pb-2">
+                        <h3 class="font-bold text-sm">模板配置要素 (约束范围)</h3>
+                        <span class="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">模型约束</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6">
+                        <!-- Business Partner Model -->
+                        <div class="space-y-3 p-3 bg-muted/20 rounded-sm">
+                            <div class="flex items-center gap-2 border-b border-border/50 pb-1 mb-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-xs font-bold">业务伙伴模型</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">层级</label>
+                                    <input type="number" value="3" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">主体挂载层级</label>
+                                    <input type="number" value="3" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">业务伙伴身份</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option selected>供应商</option>
+                                        <option>商家</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">合作方式</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>自营</option>
+                                        <option selected>联营购销</option>
+                                        <option>联营抽佣</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Model -->
+                        <div class="space-y-3 p-3 bg-muted/20 rounded-sm">
+                            <div class="flex items-center gap-2 border-b border-border/50 pb-1 mb-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-xs font-bold">商品模型</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">可供财务类别</label>
+                                    <input type="text" value="1, 2, 3, 4, 5, 6" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">商品经营模式</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>自营</option>
+                                        <option selected>联营购销</option>
+                                        <option>联营抽佣</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">品项关系</label>
+                                    <input type="text" value="-" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Virtual Org Model -->
+                        <div class="space-y-3 p-3 bg-muted/20 rounded-sm">
+                            <div class="flex items-center gap-2 border-b border-border/50 pb-1 mb-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-xs font-bold">虚拟组织模型</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">是否创建虚拟组织</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option selected>是</option>
+                                        <option>否</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">虚拟组织根节点</label>
+                                    <input type="text" value="实体组织5级" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">虚拟组织层级</label>
+                                    <input type="number" value="8" class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-muted-foreground block mb-1">是否绑定供应商</label>
+                                    <select class="w-full border border-border rounded-sm h-7 px-2 text-xs outline-none focus:border-primary">
+                                        <option>是</option>
+                                        <option selected>否</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-template Selection -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-border pb-2">
+                        <h3 class="font-bold text-sm">关联子规则模板</h3>
+                        <span class="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">多对多关联</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-sm font-medium">商品/品项规则 (R1)</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pl-3">
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary" checked>
+                                    <span class="text-xs">餐饮包材通用领用规则</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary">
+                                    <span class="text-xs">生鲜品类准入标准</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-1 h-3 bg-primary rounded-full"></span>
+                                <span class="text-sm font-medium">权限/岗位分发 (R2)</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pl-3">
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary" checked>
+                                    <span class="text-xs">商家员工标准功能包 [通用]</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-2 border border-border rounded-sm hover:bg-muted/30 cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 rounded-sm border-border text-primary focus:ring-primary" checked>
+                                    <span class="text-xs">财务结算对账权限</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Script Section -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-border pb-2">
+                        <h3 class="font-bold text-sm">模板自定义脚本</h3>
+                        <span class="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">逻辑约束</span>
+                    </div>
+                    <div class="space-y-1">
+                        <textarea class="w-full border border-border rounded-sm p-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none h-32 font-mono bg-muted/10" spellcheck="false">// 校验餐饮类目必填项
+function validate(data) {
+    if (data.category === 'catering') {
+        return !!data.license_info;
+    }
+    return true;
+}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end gap-3">
+                <button onclick="closeModal('edit-main')" class="px-6 py-2 text-sm border border-border rounded-sm hover:text-primary hover:border-primary transition-colors">取消</button>
+                <button onclick="closeModal('edit-main')" class="px-6 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">保存更改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Main Template Details -->
+    <div id="modal-detail-main" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[800px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold">业态主模板详情</h2>
+                    <span class="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded">已生效</span>
+                </div>
+                <button onclick="closeModal('detail-main')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-8">
+                <!-- Status & Stats -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">版本号</p>
+                        <p class="text-sm font-bold">V1.0.4</p>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">绑定商家</p>
+                        <p class="text-sm font-bold">128</p>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">创建人</p>
+                        <p class="text-sm font-bold">张三</p>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">更新时间</p>
+                        <p class="text-sm font-bold text-[11px]">2026-06-20 14:30</p>
+                    </div>
+                </div>
+
+                <!-- Basic Info Read-only -->
+                <div class="grid grid-cols-2 gap-y-4">
+                    <div>
+                        <p class="text-xs text-muted-foreground mb-1">业态类型</p>
+                        <p class="text-sm">餐饮</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-muted-foreground mb-1">经营模式</p>
+                        <p class="text-sm">联营购销</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs text-muted-foreground mb-1">模板名称</p>
+                        <p class="text-sm font-medium">餐饮-联营购销-通用模板</p>
+                    </div>
+                </div>
+
+                <!-- Template Configuration Elements (Constraints) Read-only -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-sm border-l-4 border-primary pl-2">模板配置要素 (约束范围)</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-muted/20 p-3 rounded-sm space-y-2">
+                            <p class="text-[10px] font-bold text-primary border-b border-primary/20 pb-1 uppercase">业务伙伴模型</p>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">层级:</span><span>3</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">主体挂载层级:</span><span>3</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">身份:</span><span>供应商</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">合作方式:</span><span>联营购销</span></div>
+                        </div>
+                        <div class="bg-muted/20 p-3 rounded-sm space-y-2">
+                            <p class="text-[10px] font-bold text-primary border-b border-primary/20 pb-1 uppercase">商品模型</p>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">财务类别:</span><span>1, 2, 3, 4, 5, 6</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">经营模式:</span><span>联营购销</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">品项关系:</span><span>-</span></div>
+                        </div>
+                        <div class="bg-muted/20 p-3 rounded-sm space-y-2">
+                            <p class="text-[10px] font-bold text-primary border-b border-primary/20 pb-1 uppercase">虚拟组织模型</p>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">创建虚拟组织:</span><span>是</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">根节点:</span><span>实体组织5级</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">层级:</span><span>8</span></div>
+                            <div class="flex justify-between text-[11px]"><span class="text-muted-foreground">绑定供应商:</span><span>否</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-templates Read-only -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-sm border-l-4 border-primary pl-2">关联子规则模板</h3>
+                    <div class="bg-muted/20 p-4 rounded-sm space-y-3">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-muted-foreground">商品/品项规则:</span>
+                            <span class="font-medium">餐饮包材通用领用规则</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-muted-foreground">权限/岗位分发:</span>
+                            <span class="font-medium">商家员工标准功能包 [通用], 财务结算对账权限</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Script Read-only -->
+                <div class="space-y-3">
+                    <h3 class="font-bold text-sm border-l-4 border-primary pl-2">模板自定义脚本</h3>
+                    <pre class="bg-[#00162a] text-white p-4 rounded-sm text-xs font-mono overflow-x-auto">function validate(data) {
+    if (data.category === 'catering') {
+        return !!data.license_info;
+    }
+    return true;
+}</pre>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end">
+                <button onclick="closeModal('detail-main')" class="px-8 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Sub Template -->
+    <div id="modal-add-sub" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[900px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <h2 class="text-lg font-bold">新增子规则模板</h2>
+                <button onclick="closeModal('add-sub')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-6">
+                <!-- Basic Info -->
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">子模板场景 <span class="text-red-500">*</span></label>
+                        <select id="sub-scene-selector-add" onchange="switchSubScene(this.value, 'add')" class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option value="product">商品可用模板 (R1)</option>
+                            <option value="auth">权限分发模板 (R2)</option>
+                            <option value="stall">档口分品模板 (R3)</option>
+                            <option value="device">设备归属模板 (R4)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">子模板名称 <span class="text-red-500">*</span></label>
+                        <input type="text" placeholder="请输入子模板名称" class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">关联主规则 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option>CY01-05: 餐饮业态下全部模板</option>
+                            <option>LS04: 零售线下店自营模板</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Scene Content Area -->
+                <div id="sub-scene-content-add" class="min-h-[300px] border border-border/50 rounded-sm p-4 bg-muted/5">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-l-4 border-primary pl-2 mb-4">
+                            <span class="text-sm font-bold">商品可用配置组合</span>
+                            <button onclick="addProductCombination('add')" class="text-[10px] bg-primary text-white px-2 py-1 rounded-sm hover:bg-primary/90 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                新增组合
+                            </button>
+                        </div>
+                        <div id="product-combinations-container-add" class="space-y-6"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end gap-3">
+                <button onclick="closeModal('add-sub')" class="px-6 py-2 text-sm border border-border rounded-sm hover:text-primary hover:border-primary transition-colors">取消</button>
+                <button onclick="closeModal('add-sub')" class="px-6 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">确认新增</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Sub Template -->
+    <div id="modal-edit-sub" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[900px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold">编辑子规则模板</h2>
+                    <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">R10003</span>
+                </div>
+                <button onclick="closeModal('edit-sub')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-6">
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">子模板场景</label>
+                        <select id="sub-scene-selector-edit" onchange="switchSubScene(this.value, 'edit')" class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option value="product">商品可用模板 (R1)</option>
+                            <option value="auth">权限分发模板 (R2)</option>
+                            <option value="stall">档口分品模板 (R3)</option>
+                            <option value="device">设备归属模板 (R4)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">子模板名称</label>
+                        <input type="text" value="餐饮包材奶茶专用模板" class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">关联主规则</label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option selected>CY01-05: 餐饮业态下全部模板</option>
+                            <option>LS04: 零售线下店自营模板</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="sub-scene-content-edit" class="min-h-[300px] border border-border/50 rounded-sm p-4 bg-muted/5"></div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end gap-3">
+                <button onclick="closeModal('edit-sub')" class="px-6 py-2 text-sm border border-border rounded-sm hover:text-primary hover:border-primary transition-colors">取消</button>
+                <button onclick="closeModal('edit-sub')" class="px-6 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">保存更改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Sub Template Details -->
+    <div id="modal-detail-sub" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[900px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold">子规则模板详情</h2>
+                    <span class="text-xs bg-success/10 text-success px-2 py-0.5 rounded">已生效</span>
+                </div>
+                <button onclick="closeModal('detail-sub')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-6">
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">子模板编号</p>
+                        <p class="text-sm font-bold">R10003</p>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">所属场景</p>
+                        <p id="detail-scene-label" class="text-sm font-bold">商品可用模板 (R1)</p>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">创建人</p>
+                        <p class="text-sm font-bold">李敏</p>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-sm">
+                        <p class="text-[10px] text-muted-foreground mb-1">更新时间</p>
+                        <p class="text-sm font-bold text-[11px]">2026-06-21 10:00</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-y-4">
+                        <div>
+                            <p class="text-xs text-muted-foreground mb-1">子模板名称</p>
+                            <p class="text-sm">餐饮包材奶茶专用模板</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-muted-foreground mb-1">关联主规则</p>
+                            <p class="text-sm">CY01-CY05: 餐饮业态下全部模板</p>
+                        </div>
+                    </div>
+                    <div id="sub-scene-content-detail" class="mt-4 border-t border-border pt-4"></div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end">
+                <button onclick="closeModal('detail-sub')" class="px-8 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Meta Model -->
+    <div id="modal-add-meta" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[700px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <h2 class="text-lg font-bold">新增元模型</h2>
+                <button onclick="closeModal('add-meta')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">元模型名称 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option value="">请选择</option>
+                            <option>业态模型</option>
+                            <option>节点模型</option>
+                            <option>经营关系模型</option>
+                            <option>业务伙伴身份</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">状态 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option>已启用</option>
+                            <option>禁用</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 space-y-1">
+                        <label class="block text-sm font-medium text-foreground">元模型数据 (枚举值) <span class="text-red-500">*</span></label>
+                        <textarea placeholder="输入枚举值，多个请用中文逗号或换行分隔" class="w-full border border-border rounded-sm p-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none h-24 font-mono"></textarea>
+                    </div>
+                    <div class="col-span-2 space-y-1">
+                        <label class="block text-sm font-medium text-foreground">描述说明</label>
+                        <textarea placeholder="请输入元模型枚举值的业务定义说明" class="w-full border border-border rounded-sm p-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none h-20"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end gap-3">
+                <button onclick="closeModal('add-meta')" class="px-6 py-2 text-sm border border-border rounded-sm hover:text-primary hover:border-primary transition-colors">取消</button>
+                <button onclick="closeModal('add-meta')" class="px-6 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">确认新增</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Meta Model -->
+    <div id="modal-edit-meta" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[700px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <h2 class="text-lg font-bold">编辑元模型枚举</h2>
+                <button onclick="closeModal('edit-meta')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">元模型名称</label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none bg-muted" disabled>
+                            <option selected>业态模型</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-foreground">状态 <span class="text-red-500">*</span></label>
+                        <select class="w-full border border-border rounded-sm h-9 px-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none">
+                            <option selected>已启用</option>
+                            <option>禁用</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 space-y-1">
+                        <label class="block text-sm font-medium text-foreground">元模型数据 (枚举值) <span class="text-red-500">*</span></label>
+                        <textarea class="w-full border border-border rounded-sm p-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none h-24 font-mono">餐饮、零售、原料供给</textarea>
+                    </div>
+                    <div class="col-span-2 space-y-1">
+                        <label class="block text-sm font-medium text-foreground">描述说明</label>
+                        <textarea class="w-full border border-border rounded-sm p-3 text-sm focus:ring-1 focus:ring-[#1890ff] focus:border-[#1890ff] outline-none h-20">定义餐饮类业务的核心流程约束</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end gap-3">
+                <button onclick="closeModal('edit-meta')" class="px-6 py-2 text-sm border border-border rounded-sm hover:text-primary hover:border-primary transition-colors">取消</button>
+                <button onclick="closeModal('edit-meta')" class="px-6 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Meta Model Details -->
+    <div id="modal-detail-meta" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-card w-[700px] rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+                <h2 class="text-lg font-bold">元模型详情</h2>
+                <button onclick="closeModal('detail-meta')" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto space-y-8">
+                <div class="grid grid-cols-2 gap-y-6">
+                    <div>
+                        <p class="text-xs text-muted-foreground mb-1">元模型名称</p>
+                        <p class="text-sm font-medium">业态模型</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-muted-foreground mb-1">当前元模型数据 (枚举值)</p>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/20">餐饮</span>
+                            <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/20">零售</span>
+                            <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/20">原料供给</span>
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs text-muted-foreground mb-1">模型定义说明</p>
+                        <p class="text-sm leading-relaxed">用于定义整个多主体协同平台支持的业务业态分类，作为主模板配置的基础维度。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border flex justify-end">
+                <button onclick="closeModal('detail-meta')" class="px-8 py-2 text-sm bg-primary text-white rounded-sm hover:bg-primary/90 transition-colors">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchMenu(menuId) {
+            // Update sidebar
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('sidebar-active'));
+            document.getElementById('menu-' + menuId).classList.add('sidebar-active');
+            
+            // Update Title
+            const titles = {
+                'dashboard': '工作台总览',
+                'main-template': '业态主模板管理',
+                'sub-template': '子规则模板管理',
+                'meta-model': '元模型管理'
+            };
+            document.getElementById('page-title').innerText = titles[menuId];
+            document.getElementById('current-breadcrumb').innerText = titles[menuId];
+
+            // Update Action Button and Table Content
+            const btn = document.getElementById('action-buttons');
+            const tableHead = document.getElementById('table-head');
+            const tableBody = document.getElementById('table-body');
+            const filterForm = document.getElementById('filter-form-container');
+            
+            if(menuId === 'sub-template') {
+                filterForm.classList.remove('hidden');
+                tableHead.innerHTML = `
+                    <tr>
+                        <th class="px-4 py-3 font-medium">模板名称</th>
+                        <th class="px-4 py-3 font-medium">所属业态</th>
+                        <th class="px-4 py-3 font-medium">经营模式</th>
+                        <th class="px-4 py-3 font-medium">绑定商家数</th>
+                        <th class="px-4 py-3 font-medium">版本号</th>
+                        <th class="px-4 py-3 font-medium">状态</th>
+                        <th class="px-4 py-3 font-medium">更新时间</th>
+                        <th class="px-4 py-3 font-medium text-right">操作</th>
+                    </tr>
+                `;
+                btn.innerHTML = `<button onclick="openModal('add-sub')" class="bg-[#1890ff] text-white px-4 py-1.5 rounded-sm text-sm hover:bg-[#1890ff]/90 transition-colors flex items-center gap-2 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    新增子模板
+                </button>`;
+                
+                tableBody.innerHTML = `
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">餐饮包材奶茶专用模板</td>
+                        <td class="px-4 py-3 text-muted-foreground">餐饮</td>
+                        <td class="px-4 py-3 text-muted-foreground">联营购销</td>
+                        <td class="px-4 py-3">85</td>
+                        <td class="px-4 py-3">V1.0.2</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已生效</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-21 10:00</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-sub')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-sub')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">商家品牌负责人功能权限包</td>
+                        <td class="px-4 py-3 text-muted-foreground">通用</td>
+                        <td class="px-4 py-3 text-muted-foreground">通用</td>
+                        <td class="px-4 py-3">210</td>
+                        <td class="px-4 py-3">V2.0.1</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已生效</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-22 15:30</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-sub')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-sub')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                `;
+            } else if(menuId === 'main-template') {
+                filterForm.classList.remove('hidden');
+                tableHead.innerHTML = `
+                    <tr>
+                        <th class="px-4 py-3 font-medium">模板名称</th>
+                        <th class="px-4 py-3 font-medium">所属业态</th>
+                        <th class="px-4 py-3 font-medium">经营模式</th>
+                        <th class="px-4 py-3 font-medium">绑定商家数</th>
+                        <th class="px-4 py-3 font-medium">版本号</th>
+                        <th class="px-4 py-3 font-medium">状态</th>
+                        <th class="px-4 py-3 font-medium">更新时间</th>
+                        <th class="px-4 py-3 font-medium text-right">操作</th>
+                    </tr>
+                `;
+                btn.innerHTML = `<button onclick="openModal('add-main')" class="bg-[#1890ff] text-white px-4 py-1.5 rounded-sm text-sm hover:bg-[#1890ff]/90 transition-colors flex items-center gap-2 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    新增主模板
+                </button>`;
+                
+                tableBody.innerHTML = `
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">餐饮-联营购销-通用模板</td>
+                        <td class="px-4 py-3 text-muted-foreground">餐饮</td>
+                        <td class="px-4 py-3 text-muted-foreground">联营购销</td>
+                        <td class="px-4 py-3">128</td>
+                        <td class="px-4 py-3">V1.0.4</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已生效</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-20 14:30</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">零售-自营-前置仓标准</td>
+                        <td class="px-4 py-3 text-muted-foreground">零售</td>
+                        <td class="px-4 py-3 text-muted-foreground">自营</td>
+                        <td class="px-4 py-3">54</td>
+                        <td class="px-4 py-3">V2.1.0</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已生效</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-25 09:15</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-main')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                `;
+            } else if(menuId === 'meta-model') {
+                filterForm.classList.add('hidden');
+                tableHead.innerHTML = `
+                    <tr>
+                        <th class="px-4 py-3 font-medium">元模型名称</th>
+                        <th class="px-4 py-3 font-medium">元模型数据</th>
+                        <th class="px-4 py-3 font-medium">状态</th>
+                        <th class="px-4 py-3 font-medium">更新时间</th>
+                        <th class="px-4 py-3 font-medium text-right">操作</th>
+                    </tr>
+                `;
+                btn.innerHTML = `<button onclick="openModal('add-meta')" class="bg-[#1890ff] text-white px-4 py-1.5 rounded-sm text-sm hover:bg-[#1890ff]/90 transition-colors flex items-center gap-2 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    新增元模型
+                </button>`;
+                
+                tableBody.innerHTML = `
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">业态模型</td>
+                        <td class="px-4 py-3">餐饮、零售、原料供给</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已启用</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-28 10:00</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">节点模型</td>
+                        <td class="px-4 py-3">前置仓、线下店、加工仓、物流仓、虚拟仓</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已启用</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-28 10:15</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">经营关系模型</td>
+                        <td class="px-4 py-3">联营+购销、联营+抽佣、自营+购销、平台+服务费</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已启用</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-28 10:30</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                    <tr class="zebra-row hover:bg-black/[0.02] transition-colors">
+                        <td class="px-4 py-3 font-medium">业务伙伴身份</td>
+                        <td class="px-4 py-3">供应商、商家、客户</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#52c41a]"></span>
+                                <span>已启用</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">2026-06-28 10:45</td>
+                        <td class="px-4 py-3 text-right">
+                            <span onclick="openModal('edit-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer mr-3">编辑</span>
+                            <span onclick="openModal('detail-meta')" class="text-[#1890ff] hover:text-[#1890ff]/80 cursor-pointer">详情</span>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                filterForm.classList.add('hidden');
+                btn.innerHTML = '';
+            }
+        }
+
+        function openModal(type) {
+            document.getElementById('modal-' + type).classList.remove('hidden');
+        }
+
+        function closeModal(type) {
+            document.getElementById('modal-' + type).classList.add('hidden');
+        }
+
+        // --- Sub-template Scene Switching Logic ---
+        function addProductCombination(mode, isEdit = false) {
+            const container = document.getElementById(`product-combinations-container-${mode}`);
+            if (!container) return;
+
+            const combinationId = Date.now() + Math.random();
+            const combinationHtml = `
+                <div class="relative p-4 border border-dashed border-border rounded-sm bg-white group" id="combo-${combinationId}">
+                    <button onclick="removeProductCombination('${combinationId}')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="space-y-1">
+                            <label class="block text-xs text-muted-foreground">商品SKU (支持多选/导入)</label>
+                            <textarea placeholder="输入商品ID或名称，多个请用换行分隔" class="w-full border border-border rounded-sm p-3 text-xs outline-none h-32 focus:border-primary font-mono">${isEdit ? '8092052-95吸塑杯\n8090953-塑料杯盖-95' : ''}</textarea>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <label class="block text-xs text-muted-foreground">关联虚拟组织 (树形多选)</label>
+                                <div class="border border-border rounded-sm p-3 bg-white h-32 overflow-y-auto space-y-2">
+                                    <div class="space-y-1">
+                                        <label class="flex items-center gap-2 text-[11px] font-bold">
+                                            <input type="checkbox" class="rounded-sm" ${isEdit ? 'checked' : ''}> 朴朴超市 (总部)
+                                        </label>
+                                        <div class="pl-4 space-y-1 border-l border-border ml-1.5 mt-1">
+                                            <label class="flex items-center gap-2 text-[11px]">
+                                                <input type="checkbox" class="rounded-sm" ${isEdit ? 'checked' : ''}> 福州区域
+                                            </label>
+                                            <label class="flex items-center gap-2 text-[11px]">
+                                                <input type="checkbox" class="rounded-sm"> 厦门区域
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', combinationHtml);
+        }
+
+        function removeProductCombination(id) {
+            const el = document.getElementById(`combo-${id}`);
+            if (el) el.remove();
+        }
+
+        function switchSubScene(scene, mode) {
+            const container = document.getElementById(`sub-scene-content-${mode}`);
+            if (!container) return;
+
+            if (scene === 'product') {
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-l-4 border-primary pl-2 mb-4">
+                            <span class="text-sm font-bold">商品可用配置组合</span>
+                            <button onclick="addProductCombination('${mode}')" class="text-[10px] bg-primary text-white px-2 py-1 rounded-sm hover:bg-primary/90 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                新增组合
+                            </button>
+                        </div>
+                        <div id="product-combinations-container-${mode}" class="space-y-6"></div>
+                    </div>
+                `;
+                addProductCombination(mode, mode === 'edit');
+                return;
+            }
+
+            const scenes = {
+                auth: {
+                    title: '权限分发配置',
+                    fields: `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="block text-xs text-muted-foreground">岗位名称</label>
+                                    <input type="text" value="${mode === 'edit' ? '商家品牌负责人' : ''}" class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="block text-xs text-muted-foreground">数据权限层级</label>
+                                    <select class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                                        <option selected>虚拟组织一级</option>
+                                        <option>虚拟组织二级</option>
+                                        <option>全权限</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-xs text-muted-foreground">功能权限说明 (勾选元模型)</label>
+                                <div class="grid grid-cols-3 gap-2 bg-white p-3 border border-border rounded-sm">
+                                    <label class="flex items-center gap-2 text-[11px]"><input type="checkbox" checked> 公告/朴声</label>
+                                    <label class="flex items-center gap-2 text-[11px]"><input type="checkbox" checked> 消息中心</label>
+                                    <label class="flex items-center gap-2 text-[11px]"><input type="checkbox" checked> 商品管理</label>
+                                    <label class="flex items-center gap-2 text-[11px]"><input type="checkbox" checked> 供应商结算</label>
+                                    <label class="flex items-center gap-2 text-[11px]"><input type="checkbox" checked> 订单管理</label>
+                                    <label class="flex items-center gap-2 text-[11px]"><input type="checkbox"> 财务对账</label>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                stall: {
+                    title: '档口分品配置',
+                    fields: `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="block text-xs text-muted-foreground">档口类型 (编码+名称)</label>
+                                <input type="text" value="${mode === 'edit' ? 'FZ08-001 欣茂炒货' : ''}" class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-xs text-muted-foreground">分配商家</label>
+                                <input type="text" value="${mode === 'edit' ? '福州欣茂餐饮管理有限公司' : ''}" class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-xs text-muted-foreground">允许上架 SKU 大类</label>
+                                <input type="text" value="${mode === 'edit' ? '餐饮原料、餐饮成品' : ''}" class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-xs text-muted-foreground">可查看操作岗位层级</label>
+                                <select class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                                    <option selected>全国: 品牌负责人</option>
+                                    <option>城市: 运营负责人</option>
+                                    <option>门店: 店长、师傅</option>
+                                </select>
+                            </div>
+                        </div>
+                    `
+                },
+                device: {
+                    title: '设备归属配置',
+                    fields: `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="block text-xs text-muted-foreground">设备大类</label>
+                                <select class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                                    <option selected>生产设备</option>
+                                    <option>IOT设备</option>
+                                    <option>摄像头设备</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-xs text-muted-foreground">归属档口 (真实档口案例)</label>
+                                <input type="text" value="${mode === 'edit' ? '欣茂炒货 (FZ08-001)' : ''}" class="w-full border border-border rounded-sm h-8 px-2 text-xs outline-none focus:border-primary">
+                            </div>
+                            <div class="col-span-2 space-y-1">
+                                <label class="block text-xs text-muted-foreground">具体物资设备 ID & 名称</label>
+                                <textarea class="w-full border border-border rounded-sm p-2 text-xs outline-none h-20 focus:border-primary font-mono">${mode === 'edit' ? 'SC-FZ08-001 炒菜机\nSC-FZ08-002 果汁机' : ''}</textarea>
+                            </div>
+                        </div>
+                    `
+                }
+            };
+
+            const selected = scenes[scene];
+            container.innerHTML = `
+                <div class="scene-fields space-y-4">
+                    <div class="flex items-center gap-2 border-l-4 border-primary pl-2 mb-4">
+                        <span class="text-sm font-bold">${selected.title}</span>
+                    </div>
+                    ${selected.fields}
+                </div>
+            `;
+        }
+
+        // Initialize scene contents for modals
+        window.onload = function() {
+            switchSubScene('product', 'add');
+            switchSubScene('product', 'edit');
+            
+            const detailContainer = document.getElementById('sub-scene-content-detail');
+            if (detailContainer) {
+                detailContainer.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-2 border-l-4 border-primary pl-2">
+                            <span class="text-sm font-bold">商品可用配置组合详情</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="bg-muted/10 p-4 rounded-sm border border-border/50">
+                                <p class="text-[10px] font-bold text-primary mb-3">配置组合 #1</p>
+                                <div class="grid grid-cols-2 gap-8">
+                                    <div class="space-y-2">
+                                        <p class="text-xs text-muted-foreground">商品 SKU 清单</p>
+                                        <div class="bg-white p-3 rounded-sm text-[11px] font-mono leading-relaxed border border-border">
+                                            8092052-95吸塑杯<br>
+                                            8090953-塑料杯盖-95
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <p class="text-xs text-muted-foreground">关联虚拟组织</p>
+                                            <div class="flex flex-wrap gap-2 mt-2">
+                                                <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/20">朴朴超市 (总部)</span>
+                                                <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/20">福州区域</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

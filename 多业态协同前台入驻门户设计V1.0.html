@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUPUMALL - 商家自助入驻</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        senshan: {
+                            green: '#22a35d',
+                            light: '#e9f6ef',
+                            dark: '#1a7d44'
+                        },
+                        apple: {
+                            gray: '#f5f5f7',
+                            dark: '#1d1d1f',
+                            silver: '#86868b'
+                        }
+                    },
+                    borderRadius: {
+                        'apple': '18px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap');
+        body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .step-active { color: #22a35d; border-bottom: 2px solid #22a35d; }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .tree-line { position: relative; }
+        .tree-line::before { content: ''; position: absolute; left: -20px; top: -10px; bottom: 22px; width: 1px; background: #e5e7eb; }
+        .tree-line::after { content: ''; position: absolute; left: -20px; top: 22px; width: 15px; height: 1px; background: #e5e7eb; }
+        .tree-node-last::before { bottom: auto; height: 32px; }
+        
+        /* Sidebar styles */
+        .sidebar-item-active { background-color: white; color: #22a35d; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        /* App View styles */
+        .mobile-frame { width: 375px; height: 812px; border: 12px solid #1d1d1f; border-radius: 40px; overflow: hidden; background: white; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; }
+        .mobile-status-bar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+        .mobile-content { flex: 1; overflow-y: auto; padding-bottom: 40px; -webkit-overflow-scrolling: touch; }
+        .mobile-home-indicator { height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .mobile-home-indicator::after { content: ''; width: 134px; height: 5px; background: #000; border-radius: 100px; opacity: 0.1; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-apple-gray text-apple-dark antialiased h-screen flex overflow-hidden">
+
+    <!-- Left Navigation Sidebar -->
+    <aside class="w-64 bg-[#f0f0f2] border-r border-gray-200 flex flex-col p-4 shrink-0 z-[60] h-full">
+        <div class="mb-8 px-2 flex items-center gap-3">
+            <div class="w-8 h-8 bg-senshan-green rounded-lg flex items-center justify-center text-white font-bold">P</div>
+            <div class="flex flex-col">
+                <span class="font-bold text-sm leading-tight">PUPUMALL</span>
+                <span class="text-[10px] text-apple-silver">原型预览模式</span>
+            </div>
+        </div>
+        
+        <nav class="space-y-2 flex-1">
+            <p class="text-[10px] font-bold text-apple-silver uppercase tracking-widest mb-4 px-2">选择预览端</p>
+            <button onclick="switchView('web')" id="nav-web" class="sidebar-item-active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-white/50 text-left">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 21h6l-.75-4M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                1、商家自助入驻（web端）
+            </button>
+            <button onclick="switchView('app')" id="nav-app" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-apple-silver transition-all hover:bg-white/50 text-left">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                2、商家自助入驻（app端）
+            </button>
+        </nav>
+        
+        <div class="mt-auto p-2 bg-white/40 rounded-xl">
+            <p class="text-[10px] text-apple-silver leading-relaxed">
+                提示：App端采用沉浸式手机交互设计，建议在切换后体验移动端特有的表单流转。
+            </p>
+        </div>
+    </aside>
+
+    <!-- Main View Container -->
+    <div class="flex-1 relative h-full overflow-hidden">
+        
+        <!-- WEB VIEW -->
+        <div id="view-web" class="absolute inset-0 overflow-y-auto">
+            <!-- Header -->
+            <header class="glass sticky top-0 z-50 border-b border-gray-200">
+                <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-senshan-green rounded-lg flex items-center justify-center text-white font-bold">P</div>
+                        <span class="font-semibold text-lg tracking-tight">PUPUMALL <span class="text-apple-silver font-normal text-sm">业务伙伴入驻</span></span>
+                    </div>
+                    <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                        <a href="https://msems.pupumall.com/create?isFirst=true" target="_blank" class="hover:text-senshan-green transition-colors text-sm">入驻指南</a>
+                        <a href="https://pupufz.com/" target="_blank" class="hover:text-senshan-green transition-colors text-sm">了解朴朴</a>
+                        <button onclick="window.open('https://sems.pupumall.com/login', '_blank')" class="bg-senshan-green text-white px-5 py-2 rounded-full text-xs hover:opacity-90 transition-opacity">登录工作台</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="max-w-5xl mx-auto px-6 py-12">
+                <!-- Onboarding Progress -->
+                <div class="mb-12 text-center">
+                    <h1 class="text-4xl font-bold mb-4 tracking-tight">开启您的朴朴业务</h1>
+                    <p class="text-apple-silver text-lg">仅需五个步骤，即可完成业务伙伴的标准化入驻。</p>
+                </div>
+
+                <!-- Steps Indicator (WEB) -->
+                <div class="flex justify-between items-center mb-16 max-w-4xl mx-auto pb-2">
+                    <div class="flex flex-col items-center gap-3 cursor-pointer group" onclick="goToStep(1, 'web')">
+                        <div id="web-circle-1" class="w-10 h-10 rounded-full border-2 border-senshan-green flex items-center justify-center text-senshan-green font-semibold transition-all">1</div>
+                        <span id="web-text-1" class="text-xs font-medium text-senshan-green">主体资料</span>
+                    </div>
+                    <div class="flex-1 h-[1px] bg-gray-200 mx-2 mb-8"></div>
+                    <div class="flex flex-col items-center gap-3 cursor-pointer group" onclick="goToStep(2, 'web')">
+                        <div id="web-circle-2" class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-apple-silver font-semibold transition-all">2</div>
+                        <span id="web-text-2" class="text-xs font-medium text-apple-silver">详细信息</span>
+                    </div>
+                    <div class="flex-1 h-[1px] bg-gray-200 mx-2 mb-8"></div>
+                    <div class="flex flex-col items-center gap-3 cursor-pointer group" onclick="goToStep(3, 'web')">
+                        <div id="web-circle-3" class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-apple-silver font-semibold transition-all">3</div>
+                        <span id="web-text-3" class="text-xs font-medium text-apple-silver">业务配置</span>
+                    </div>
+                    <div class="flex-1 h-[1px] bg-gray-200 mx-2 mb-8"></div>
+                    <div class="flex flex-col items-center gap-3 cursor-pointer group" onclick="goToStep(4, 'web')">
+                        <div id="web-circle-4" class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-apple-silver font-semibold transition-all">4</div>
+                        <span id="web-text-4" class="text-xs font-medium text-apple-silver">资质审核</span>
+                    </div>
+                    <div class="flex-1 h-[1px] bg-gray-200 mx-2 mb-8"></div>
+                    <div class="flex flex-col items-center gap-3 cursor-pointer group" onclick="goToStep(5, 'web')">
+                        <div id="web-circle-5" class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-apple-silver font-semibold transition-all">5</div>
+                        <span id="web-text-5" class="text-xs font-medium text-apple-silver">模板绑定</span>
+                    </div>
+                    <div class="flex-1 h-[1px] bg-gray-200 mx-2 mb-8"></div>
+                    <div class="flex flex-col items-center gap-3 cursor-pointer group" onclick="goToStep(6, 'web')">
+                        <div id="web-circle-6" class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-apple-silver font-semibold transition-all">6</div>
+                        <span id="web-text-6" class="text-xs font-medium text-apple-silver">完成生效</span>
+                    </div>
+                </div>
+
+                <!-- Step Containers (WEB) -->
+                <div class="bg-white rounded-apple shadow-xl shadow-black/5 overflow-hidden fade-in min-h-[600px]" id="web-step-content">
+                    <!-- Steps content will be injected or controlled by JS -->
+                    <!-- Step 1-5 content identical to previous implementation but with 'web-' prefix for IDs where needed -->
+                    
+                    <!-- Step 1: Identity (Web) -->
+                    <div id="web-step-1" class="p-8 md:p-12 space-y-10">
+                        <div class="space-y-2">
+                            <h2 class="text-2xl font-bold">填写主体基本信息</h2>
+                            <p class="text-apple-silver text-sm">请确保填写的信息与营业执照一致，以便后续快速通过审核。</p>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-apple-silver ml-1">企业全称</label>
+                                <input type="text" placeholder="例如：福州朴朴电子商务有限公司" class="w-full bg-apple-gray border-none rounded-xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none transition-all">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-apple-silver ml-1">统一社会信用代码</label>
+                                <input type="text" placeholder="18位社会信用代码" class="w-full bg-apple-gray border-none rounded-xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none transition-all">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-apple-silver ml-1">业务领域</label>
+                                <select class="w-full bg-apple-gray border-none rounded-xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none transition-all appearance-none">
+                                    <option value="">选择您的业态</option>
+                                    <option>零售</option>
+                                    <option>餐饮</option>
+                                    <option>原料供应</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-apple-silver ml-1">合作模式</label>
+                                <select class="w-full bg-apple-gray border-none rounded-xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none transition-all appearance-none">
+                                    <option value="">选择合作模式</option>
+                                    <option>朴朴自营模式</option>
+                                    <option>联营抽佣模式</option>
+                                    <option>联营购销模式</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <label class="block text-sm font-semibold text-apple-silver ml-1">资质文件上传</label>
+                            <div class="border-2 border-dashed border-gray-200 rounded-apple p-12 text-center space-y-4 hover:border-senshan-green transition-colors cursor-pointer group">
+                                <div class="w-16 h-16 bg-apple-gray rounded-full flex items-center justify-center mx-auto group-hover:bg-senshan-light transition-colors">
+                                    <svg class="w-8 h-8 text-apple-silver group-hover:text-senshan-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="text-senshan-green font-semibold">点击上传营业执照</span>
+                                    <span class="text-apple-silver"> 或将文件拖拽至此处</span>
+                                </div>
+                                <p class="text-xs text-apple-silver">支持 PDF, JPG, PNG 格式 (最大 10MB)</p>
+                            </div>
+                        </div>
+                        <div class="pt-6">
+                            <button onclick="goToStep(2, 'web')" class="w-full bg-senshan-green text-white py-4 rounded-xl font-bold hover:opacity-90 transition-opacity">下一步：完善详细信息</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Detailed Info (Web) -->
+                    <div id="web-step-2" class="hidden p-8 md:p-12 space-y-12">
+                        <!-- 基础信息与组织架构定义 -->
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-bold border-l-4 border-senshan-green pl-4">基础信息与组织架构定义</h3>
+                            <div class="grid md:grid-cols-2 gap-x-12 gap-y-6 pb-8 border-b border-gray-100">
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>统一社会信用代码:</label>
+                                    <input type="text" placeholder="请输入统一社会信用代码" class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>联系人:</label>
+                                    <input type="text" placeholder="请输入联系人姓名" class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>联系电话:</label>
+                                    <input type="text" placeholder="请输入手机号码" class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>联系邮箱:</label>
+                                    <input type="text" placeholder="请输入联系邮箱" class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                </div>
+                            </div>
+
+                            <!-- 组织树动态配置器 -->
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-sm font-bold text-apple-dark">组织架构配置 (灵活定义多级节点)</label>
+                                    <span class="text-[10px] text-apple-silver bg-apple-gray px-2 py-1 rounded">Level 1 为集团根节点，其他层级可灵活添加多个</span>
+                                </div>
+                                
+                                <div class="bg-apple-gray/30 rounded-apple p-8 border border-gray-100">
+                                    <!-- Level 1 (Root) -->
+                                    <div class="space-y-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-senshan-green text-white rounded-lg flex items-center justify-center text-xs font-bold">L1</div>
+                                            <input type="text" value="朴朴业务伙伴集团" placeholder="业务伙伴一级 (集团)" class="w-64 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none font-bold">
+                                            <button onclick="addTreeNode('L2')" class="text-senshan-green hover:bg-senshan-light p-1.5 rounded-md transition-colors" title="添加二级节点">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- Level 2 Containers -->
+                                        <div class="ml-12 space-y-8">
+                                            <!-- Node Level 2 -->
+                                            <div class="tree-line">
+                                                <div class="flex items-center gap-3 mb-4">
+                                                    <div class="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-[10px] font-bold">L2</div>
+                                                    <input type="text" value="华南业务线" class="w-56 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none">
+                                                    <button class="text-apple-silver hover:text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                                    <button onclick="addTreeNode('L3')" class="text-senshan-green hover:bg-senshan-light p-1 rounded-md"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
+                                                </div>
+                                                
+                                                <div class="ml-10 space-y-4">
+                                                    <div class="tree-line">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-6 h-6 bg-purple-500 text-white rounded-lg flex items-center justify-center text-[9px] font-bold">L3</div>
+                                                            <input type="text" value="生鲜经营单元" class="w-48 bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none">
+                                                            <button onclick="addTreeNode('区域/部门')" class="text-senshan-green hover:bg-senshan-light p-1 rounded-md"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
+                                                        </div>
+                                                        <div class="ml-8 mt-4 space-y-3">
+                                                            <div class="tree-line flex items-center gap-3">
+                                                                <div class="px-3 py-1 bg-orange-50 border border-orange-100 rounded text-[10px] text-orange-700 font-bold">城市: 福州市</div>
+                                                                <div class="px-3 py-1 bg-gray-50 border border-gray-100 rounded text-[10px] text-apple-silver font-bold">部门: 仓储部</div>
+                                                                <button class="text-apple-silver hover:text-red-500"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                                            </div>
+                                                            <button onclick="addTreeNode('区域/部门')" class="text-[9px] text-senshan-green font-bold hover:underline">+ 添加区域/部门</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 开票信息 -->
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-bold border-l-4 border-senshan-green pl-4">开票信息</h3>
+                            <div class="grid md:grid-cols-2 gap-x-12 gap-y-6">
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>开户银行:</label>
+                                    <input type="text" placeholder="请输入开户银行" class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>银行账号:</label>
+                                    <input type="text" placeholder="请输入银行账号" class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-10 flex gap-4">
+                            <button onclick="goToStep(1, 'web')" class="flex-1 border border-gray-200 text-apple-dark py-4 rounded-xl font-bold hover:bg-apple-gray transition-colors">上一步</button>
+                            <button onclick="goToStep(3, 'web')" class="flex-[2] bg-senshan-green text-white py-4 rounded-xl font-bold hover:opacity-90 transition-opacity">下一步：业务配置</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Business Config (Web) -->
+                    <div id="web-step-3" class="hidden p-8 md:p-12 space-y-12">
+                        <!-- 合作商品信息 -->
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-bold border-l-4 border-senshan-green pl-4">合作商品信息</h3>
+                            <div class="grid md:grid-cols-2 gap-x-12 gap-y-6">
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>经营品类:</label>
+                                    <select class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                        <option>生鲜果蔬</option>
+                                        <option>休闲零食</option>
+                                        <option>酒水饮料</option>
+                                        <option>日用百货</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>主要商品名称:</label>
+                                    <input type="text" placeholder="请输入核心合作商品名称" class="flex-1 bg-apple-gray border-none rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 员工入职与组织分配 -->
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xl font-bold border-l-4 border-senshan-green pl-4">员工入职与组织分配</h3>
+                                <button onclick="addEmployee('web')" class="flex items-center gap-2 bg-senshan-green text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    新增员工
+                                </button>
+                            </div>
+                            
+                            <div id="web-employee-list" class="space-y-6">
+                                <!-- Employee Item 1 -->
+                                <div class="bg-senshan-light/20 p-8 rounded-apple border border-senshan-green/10 relative group">
+                                    <button class="absolute top-4 right-4 text-apple-silver hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="删除员工" onclick="this.parentElement.remove()">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                    <div class="grid md:grid-cols-2 gap-x-12 gap-y-8">
+                                        <div class="flex items-center gap-4">
+                                            <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>员工姓名:</label>
+                                            <input type="text" placeholder="请输入姓名" class="flex-1 bg-white border border-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>岗位角色:</label>
+                                            <select class="flex-1 bg-white border border-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                                <option>商家负责人</option>
+                                                <option>商家督导</option>
+                                                <option>商家开票负责人</option>
+                                                <option>商家师傅</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>所属组织节点:</label>
+                                            <div class="flex-1 relative">
+                                                <select class="w-full bg-white border border-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none appearance-none cursor-pointer">
+                                                    <option>朴朴业务伙伴集团 (L1)</option>
+                                                    <option>-- 华南业务线 (L2)</option>
+                                                    <option>---- 生鲜经营单元 (L3)</option>
+                                                    <option>------ 福州市-仓储部 (区域/部门)</option>
+                                                </select>
+                                                <div class="absolute right-3 top-1/2 -translate-y-1/2 text-apple-silver pointer-events-none">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <label class="w-32 text-right text-sm font-medium text-apple-silver"><span class="text-red-500 mr-1">*</span>手机号码:</label>
+                                            <input type="text" placeholder="请输入手机号" class="flex-1 bg-white border border-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-senshan-green outline-none">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-6 flex gap-4">
+                            <button onclick="goToStep(2, 'web')" class="flex-1 border border-gray-200 text-apple-dark py-4 rounded-xl font-bold hover:bg-apple-gray transition-colors">上一步</button>
+                            <button onclick="goToStep(4, 'web')" class="flex-[2] bg-senshan-green text-white py-4 rounded-xl font-bold hover:opacity-90 transition-opacity">确认配置并进入审核</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Audit (Web) -->
+                    <div id="web-step-4" class="hidden p-8 md:p-12 text-center space-y-8 py-20">
+                        <div class="w-20 h-20 bg-senshan-light text-senshan-green rounded-full flex items-center justify-center mx-auto">
+                            <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div class="space-y-2">
+                            <h2 class="text-3xl font-bold">正在审核您的资质</h2>
+                            <p class="text-apple-silver max-w-md mx-auto">我们的运营团队正在核实您提交的信息。通常需要 1-2 个工作日，审核结果将通过短信通知您。</p>
+                        </div>
+                        <div class="pt-6">
+                            <button onclick="goToStep(5, 'web')" class="text-senshan-green font-semibold hover:underline">演示模式：手动跳过审核</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Template Selection (Web) -->
+                    <div id="web-step-5" class="hidden p-8 md:p-12 space-y-10">
+                        <div class="space-y-2 text-center">
+                            <h2 class="text-2xl font-bold">审核通过！请选择业务模板</h2>
+                            <p class="text-apple-silver text-sm">系统已根据您的业态（餐饮）与模式（联营购销）自动匹配了以下模板。</p>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <!-- Template Card 1 (Selected) -->
+                            <div class="border-2 border-senshan-green rounded-apple p-6 relative bg-senshan-light/30 cursor-pointer">
+                                <div class="absolute top-4 right-4 w-6 h-6 bg-senshan-green rounded-full flex items-center justify-center text-white">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <h3 class="text-lg font-bold mb-2">餐饮-联营购销标准模板</h3>
+                                <p class="text-xs text-apple-silver mb-6">适用于大部分联营档口，包含标准权限包、商品自动挂载规则及财务自动对账能力。</p>
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2 text-[10px] text-apple-dark font-medium">
+                                        <svg class="w-3 h-3 text-senshan-green" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                                        包含 12 项子规则 (R1-R4)
+                                    </div>
+                                    <div class="flex items-center gap-2 text-[10px] text-apple-dark font-medium">
+                                        <svg class="w-3 h-3 text-senshan-green" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                                        适配 14 个系统终端
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Template Card 2 -->
+                            <div class="border-2 border-gray-100 rounded-apple p-6 cursor-pointer hover:border-gray-200 transition-colors">
+                                <h3 class="text-lg font-bold mb-2">极简档口-快速入驻模板</h3>
+                                <p class="text-xs text-apple-silver mb-6">仅开放核心订单处理与基础权限，适合经营品类单一的小微商户。</p>
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2 text-[10px] text-apple-dark font-medium">
+                                        <svg class="w-3 h-3 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                                        包含 4 项核心子规则
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-6">
+                            <button onclick="goToStep(6, 'web')" class="w-full bg-senshan-green text-white py-4 rounded-xl font-bold hover:opacity-90 transition-opacity">确认绑定并初始化配置</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 6: Success (Web) -->
+                    <div id="web-step-6" class="hidden p-8 md:p-12 space-y-10">
+                        <div class="text-center space-y-2">
+                            <div class="w-16 h-16 bg-green-50 text-success rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-senshan-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <h2 class="text-3xl font-bold">配置已生效！</h2>
+                            <p class="text-apple-silver">系统已自动为您完成以下环境初始化：</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-apple-gray p-4 rounded-apple text-center">
+                                <div class="text-xl font-bold mb-1">240+</div>
+                                <div class="text-[10px] text-apple-silver font-medium">SKU 可见权限</div>
+                            </div>
+                            <div class="bg-apple-gray p-4 rounded-apple text-center">
+                                <div class="text-xl font-bold mb-1">5</div>
+                                <div class="text-[10px] text-apple-silver font-medium">系统角色分配</div>
+                            </div>
+                            <div class="bg-apple-gray p-4 rounded-apple text-center">
+                                <div class="text-xl font-bold mb-1">2</div>
+                                <div class="text-[10px] text-apple-silver font-medium">虚拟组织建立</div>
+                            </div>
+                            <div class="bg-apple-gray p-4 rounded-apple text-center">
+                                <div class="text-xl font-bold mb-1">实时</div>
+                                <div class="text-[10px] text-apple-silver font-medium">结算链路打通</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-senshan-green text-white p-8 rounded-apple flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="space-y-1 text-center md:text-left">
+                                <div class="text-lg font-bold">准备好开始营业了吗？</div>
+                                <p class="text-white/60 text-sm">现在您可以进入商家工作台，管理您的商品与订单。</p>
+                            </div>
+                            <button onclick="window.open('https://sems.pupumall.com/login', '_blank')" class="bg-white text-apple-dark px-8 py-3 rounded-full font-bold text-sm hover:bg-white/90 transition-colors whitespace-nowrap">进入商家工作台</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Info -->
+                <div class="mt-12 text-center text-xs text-apple-silver space-x-6">
+                    <span>&copy; 2026 PUPUMALL Inc. 保留所有权利</span>
+                    <a href="#" class="hover:underline">隐私政策</a>
+                    <a href="#" class="hover:underline">服务条款</a>
+                    <a href="#" class="hover:underline">联系我们</a>
+                </div>
+            </main>
+        </div>
+
+        <!-- APP VIEW -->
+        <div id="view-app" class="hidden h-full flex items-center justify-center bg-gray-100/50">
+            <div class="mobile-frame">
+                <!-- Status Bar -->
+                <div class="mobile-status-bar">
+                    <span>9:41</span>
+                    <div class="flex gap-1.5">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21l-12-18h24z"/></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M13 5h-2v14h2v-14zM17 9h-2v10h2v-10zM9 13h-2v6h2v-6zM21 5h-2v14h2v-14z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 10v-4c0-1.105-.895-2-2-2h-12c-1.105 0-2 .895-2 2v12c0 1.105.895 2 2 2h12c1.105 0 2-.895 2-2v-4h2v-4h-2zM14 18h-12v-12h12v12z"/></svg>
+                    </div>
+                </div>
+
+                <!-- App Top Nav -->
+                <div class="px-6 py-2 flex items-center justify-between border-b border-gray-50 bg-white/80 backdrop-blur-md z-10 flex-shrink-0">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-6 h-6 bg-senshan-green rounded flex items-center justify-center text-white text-[10px] font-bold">P</div>
+                        <span class="text-xs font-bold tracking-tight">PUPUMALL</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <a href="https://msems.pupumall.com/create?isFirst=true" target="_blank" class="text-[10px] font-medium text-apple-silver hover:text-senshan-green">指南</a>
+                        <a href="https://pupufz.com/" target="_blank" class="text-[10px] font-medium text-apple-silver hover:text-senshan-green">了解朴朴</a>
+                    </div>
+                </div>
+                
+                <!-- App Content Container -->
+                <div class="mobile-content" id="app-step-content">
+                    
+                    <!-- App Step 1: Basic Info -->
+                    <div id="app-step-1" class="px-6 py-4 space-y-8">
+                        <div class="space-y-2">
+                            <h2 class="text-2xl font-bold tracking-tight">开启您的朴朴生意</h2>
+                            <p class="text-apple-silver text-xs leading-relaxed">连接数百万消费者，体验多业态协同的高效履约。</p>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[11px] font-bold text-apple-silver ml-1">企业全称</label>
+                                <input type="text" placeholder="输入营业执照全称" class="w-full bg-apple-gray border-none rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[11px] font-bold text-apple-silver ml-1">社会信用代码</label>
+                                <input type="text" placeholder="18位信用代码" class="w-full bg-apple-gray border-none rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-apple-silver ml-1">业务领域</label>
+                                    <div class="relative">
+                                        <select class="w-full bg-apple-gray border-none rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none appearance-none">
+                                            <option>餐饮</option>
+                                            <option>零售</option>
+                                        </select>
+                                        <svg class="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-apple-silver pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-apple-silver ml-1">合作模式</label>
+                                    <div class="relative">
+                                        <select class="w-full bg-apple-gray border-none rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-senshan-green outline-none appearance-none">
+                                            <option>自营</option>
+                                            <option>联营</option>
+                                        </select>
+                                        <svg class="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-apple-silver pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[11px] font-bold text-apple-silver ml-1">资质文件上传</label>
+                                <div class="w-full h-24 bg-apple-gray border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-1 active:bg-senshan-light transition-colors cursor-pointer">
+                                    <svg class="w-6 h-6 text-apple-silver" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                                    <span class="text-[10px] text-apple-silver font-medium">点击拍摄或选择营业执照</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-senshan-light/50 border border-senshan-green/20 rounded-3xl p-5 flex items-center gap-4">
+                            <div class="w-10 h-10 bg-senshan-green text-white rounded-full flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[13px] font-bold text-senshan-dark">官方入驻通道</p>
+                                <p class="text-[10px] text-senshan-dark/60">您的数据受森山级隐私保护协议保障</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button onclick="goToStep(2, 'app')" class="w-full bg-senshan-green text-white py-4 rounded-2xl font-bold shadow-lg shadow-senshan-green/20 active:scale-95 transition-all">
+                                立即入驻
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- App Step 2: Detailed Info -->
+                    <div id="app-step-2" class="hidden px-5 py-4 space-y-6 pb-10">
+                        <div class="flex items-center gap-2 mb-2">
+                            <button onclick="goToStep(1, 'app')" class="p-2 -ml-2 text-senshan-green"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg></button>
+                            <h2 class="text-xl font-bold">详细入驻资料</h2>
+                        </div>
+
+                        <!-- Basic Section -->
+                        <div class="space-y-3">
+                            <p class="text-[11px] font-bold text-apple-silver uppercase tracking-wider ml-1">基础信息</p>
+                            <div class="bg-apple-gray/50 rounded-2xl overflow-hidden">
+                                <div class="px-4 py-3 flex flex-col gap-1 border-b border-gray-100">
+                                    <label class="text-[10px] text-apple-silver">联系人姓名 <span class="text-red-500">*</span></label>
+                                    <input type="text" placeholder="请输入姓名" class="bg-transparent border-none p-0 text-sm focus:ring-0 font-medium">
+                                </div>
+                                <div class="px-4 py-3 flex flex-col gap-1 border-b border-gray-100">
+                                    <label class="text-[10px] text-apple-silver">联系电话 <span class="text-red-500">*</span></label>
+                                    <input type="text" placeholder="请输入手机号" class="bg-transparent border-none p-0 text-sm focus:ring-0 font-medium">
+                                </div>
+                                <div class="px-4 py-3 flex flex-col gap-1">
+                                    <label class="text-[10px] text-apple-silver">联系邮箱 <span class="text-red-500">*</span></label>
+                                    <input type="text" placeholder="请输入邮箱" class="bg-transparent border-none p-0 text-sm focus:ring-0 font-medium">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Org Section (App) -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center px-1">
+                                <p class="text-[11px] font-bold text-apple-silver uppercase tracking-wider">组织架构定义</p>
+                                <button class="text-[10px] text-senshan-green font-bold">+ 新增节点</button>
+                            </div>
+                            <div class="space-y-3">
+                                <!-- Root Node Card -->
+                                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-6 h-6 bg-senshan-green text-white rounded flex items-center justify-center text-[10px] font-bold">L1</div>
+                                        <input type="text" value="朴朴业务伙伴集团" class="flex-1 text-sm font-bold border-none p-0 focus:ring-0">
+                                    </div>
+                                    <div class="pl-6 border-l-2 border-gray-50 space-y-3">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-5 h-5 bg-blue-500 text-white rounded flex items-center justify-center text-[8px] font-bold">L2</div>
+                                            <input type="text" value="华南业务线" class="flex-1 text-xs border-none p-0 focus:ring-0">
+                                        </div>
+                                        <div class="pl-5 border-l border-gray-50 space-y-2">
+                                            <div class="bg-apple-gray/50 rounded-lg p-2 flex justify-between items-center">
+                                                <span class="text-[10px] font-medium">L3: 生鲜经营单元</span>
+                                                <svg class="w-3 h-3 text-apple-silver" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <span class="bg-orange-50 text-orange-600 text-[8px] px-2 py-0.5 rounded border border-orange-100 font-bold">福州市</span>
+                                                <span class="bg-gray-100 text-apple-silver text-[8px] px-2 py-0.5 rounded font-bold">仓储部</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button onclick="goToStep(3, 'app')" class="w-full bg-senshan-green text-white py-4 rounded-2xl font-bold shadow-lg shadow-senshan-green/20 active:opacity-90">
+                                下一步：业务配置
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- App Step 3: Business Config -->
+                    <div id="app-step-3" class="hidden px-5 py-4 space-y-6 pb-10">
+                        <div class="flex items-center gap-2 mb-2">
+                            <button onclick="goToStep(2, 'app')" class="p-2 -ml-2 text-senshan-green"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg></button>
+                            <h2 class="text-xl font-bold">业务配置</h2>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-[11px] font-bold text-apple-silver uppercase tracking-wider ml-1">合作商品</p>
+                            <div class="bg-apple-gray/50 rounded-2xl overflow-hidden">
+                                <div class="px-4 py-3 flex justify-between items-center border-b border-gray-100">
+                                    <label class="text-sm font-medium">经营品类</label>
+                                    <select class="bg-transparent border-none p-0 text-sm focus:ring-0 text-right text-apple-silver appearance-none">
+                                        <option>生鲜果蔬</option>
+                                        <option>休闲零食</option>
+                                    </select>
+                                </div>
+                                <div class="px-4 py-3 flex flex-col gap-1">
+                                    <label class="text-[10px] text-apple-silver">主要商品名称</label>
+                                    <input type="text" placeholder="请输入核心商品名称" class="bg-transparent border-none p-0 text-sm focus:ring-0 font-medium">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center px-1">
+                                <p class="text-[11px] font-bold text-apple-silver uppercase tracking-wider">员工入职与岗位</p>
+                                <button onclick="addEmployee('app')" class="text-[10px] text-senshan-green font-bold">+ 新增员工</button>
+                            </div>
+                            
+                            <div id="app-employee-list" class="space-y-4">
+                                <!-- Employee Card 1 -->
+                                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm relative group">
+                                    <button class="absolute top-3 right-3 text-apple-silver active:text-red-500" onclick="this.parentElement.remove()">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                    <div class="px-4 py-3 flex flex-col gap-1 border-b border-gray-50">
+                                        <label class="text-[10px] text-apple-silver">员工姓名</label>
+                                        <input type="text" placeholder="请输入姓名" class="bg-transparent border-none p-0 text-sm focus:ring-0 font-medium">
+                                    </div>
+                                    <div class="px-4 py-3 flex justify-between items-center border-b border-gray-50">
+                                        <label class="text-sm font-medium">岗位角色</label>
+                                        <select class="bg-transparent border-none p-0 text-sm focus:ring-0 text-right text-apple-silver appearance-none">
+                                            <option>商家负责人</option>
+                                            <option>商家督导</option>
+                                            <option>商家师傅</option>
+                                        </select>
+                                    </div>
+                                    <div class="px-4 py-3 flex flex-col gap-1 border-b border-gray-50">
+                                        <label class="text-[10px] text-apple-silver">所属组织节点</label>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-medium text-apple-silver">点击选择节点</span>
+                                            <svg class="w-4 h-4 text-senshan-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+                                        </div>
+                                    </div>
+                                    <div class="px-4 py-3 flex flex-col gap-1">
+                                        <label class="text-[10px] text-apple-silver">手机号码</label>
+                                        <input type="text" placeholder="请输入手机号" class="bg-transparent border-none p-0 text-sm focus:ring-0 font-medium">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button onclick="goToStep(4, 'app')" class="w-full bg-senshan-green text-white py-4 rounded-2xl font-bold shadow-lg shadow-senshan-green/20">
+                                确认并进入审核
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- App Step 4-6 -->
+                    <div id="app-step-4" class="hidden px-6 py-12 text-center space-y-6">
+                        <div class="w-20 h-20 bg-senshan-light text-senshan-green rounded-full flex items-center justify-center mx-auto animate-bounce">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h2 class="text-2xl font-bold">审核进行中</h2>
+                        <p class="text-apple-silver text-sm">资料已进入森山审核队列，我们将通过消息通知您审核结果。</p>
+                        <button onclick="goToStep(5, 'app')" class="text-senshan-green font-bold text-sm">快速跳过(演示)</button>
+                    </div>
+
+                    <div id="app-step-5" class="hidden px-6 py-4 space-y-6">
+                        <h2 class="text-xl font-bold">选择业务模板</h2>
+                        <div class="space-y-4">
+                            <div class="p-5 bg-senshan-light border-2 border-senshan-green rounded-3xl space-y-2">
+                                <div class="flex justify-between items-start">
+                                    <span class="font-bold text-sm">餐饮-联营购销模板</span>
+                                    <div class="w-5 h-5 bg-senshan-green rounded-full flex items-center justify-center"><svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg></div>
+                                </div>
+                                <p class="text-[10px] text-apple-silver">适配 14 个系统终端，自动同步商品规则。</p>
+                            </div>
+                        </div>
+                        <button onclick="goToStep(6, 'app')" class="w-full bg-senshan-green text-white py-4 rounded-2xl font-bold">确认模板并生效</button>
+                    </div>
+
+                    <div id="app-step-6" class="hidden px-6 py-12 text-center space-y-8">
+                        <div class="w-20 h-20 bg-senshan-green text-white rounded-full flex items-center justify-center mx-auto">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <h2 class="text-3xl font-bold">生意正式开启</h2>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-apple-gray p-4 rounded-2xl">
+                                <div class="font-bold text-lg text-senshan-green">240+</div>
+                                <div class="text-[9px] text-apple-silver">商品权限</div>
+                            </div>
+                            <div class="bg-apple-gray p-4 rounded-2xl">
+                                <div class="font-bold text-lg text-senshan-green">实时</div>
+                                <div class="text-[9px] text-apple-silver">结算打通</div>
+                            </div>
+                        </div>
+                        <button onclick="window.open('https://sems.pupumall.com/login', '_blank')" class="w-full bg-senshan-green text-white py-4 rounded-2xl font-bold">进入工作台</button>
+                    </div>
+
+                </div>
+                
+                <!-- Home Indicator -->
+                <div class="mobile-home-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchView(view) {
+            const webView = document.getElementById('view-web');
+            const appView = document.getElementById('view-app');
+            const navWeb = document.getElementById('nav-web');
+            const navApp = document.getElementById('nav-app');
+            
+            if (view === 'web') {
+                webView.classList.remove('hidden');
+                appView.classList.add('hidden');
+                navWeb.classList.add('sidebar-item-active');
+                navWeb.classList.remove('text-apple-silver');
+                navApp.classList.remove('sidebar-item-active');
+                navApp.classList.add('text-apple-silver');
+            } else {
+                webView.classList.add('hidden');
+                appView.classList.remove('hidden');
+                navApp.classList.add('sidebar-item-active');
+                navApp.classList.remove('text-apple-silver');
+                navWeb.classList.remove('sidebar-item-active');
+                navWeb.classList.add('text-apple-silver');
+            }
+        }
+
+        function goToStep(step, platform) {
+            const totalSteps = 6;
+            
+            // Sync tree logic for Step 3
+            if (step === 3) {
+                updateOrgSelectors();
+            }
+            
+            // Platform specific logic
+            if (platform === 'web') {
+                // Hide all web steps
+                for(let i=1; i<=totalSteps; i++) {
+                    const el = document.getElementById('web-step-' + i);
+                    const circle = document.getElementById('web-circle-' + i);
+                    const text = document.getElementById('web-text-' + i);
+                    
+                    if (el) el.classList.add('hidden');
+                    if (circle) {
+                        circle.classList.remove('border-senshan-green', 'text-senshan-green');
+                        circle.classList.add('border-gray-200', 'text-apple-silver');
+                    }
+                    if (text) {
+                        text.classList.remove('text-senshan-green');
+                        text.classList.add('text-apple-silver');
+                    }
+                }
+
+                // Show current web step
+                document.getElementById('web-step-' + step).classList.remove('hidden');
+                
+                // Highlight current web step indicator
+                const currentCircle = document.getElementById('web-circle-' + step);
+                const currentText = document.getElementById('web-text-' + step);
+                
+                if (currentCircle) {
+                    currentCircle.classList.remove('border-gray-200', 'text-apple-silver');
+                    currentCircle.classList.add('border-senshan-green', 'text-senshan-green');
+                }
+                if (currentText) {
+                    currentText.classList.remove('text-apple-silver');
+                    currentText.classList.add('text-senshan-green');
+                }
+
+                // Animation for web content
+                const content = document.getElementById('web-step-content');
+                content.classList.remove('fade-in');
+                void content.offsetWidth; 
+                content.classList.add('fade-in');
+                
+                // Scroll to top of the web container
+                document.getElementById('view-web').scrollTo({ top: 0, behavior: 'smooth' });
+
+            } else if (platform === 'app') {
+                // Hide all app steps
+                for(let i=1; i<=totalSteps; i++) {
+                    const el = document.getElementById('app-step-' + i);
+                    if (el) el.classList.add('hidden');
+                }
+
+                // Show current app step
+                document.getElementById('app-step-' + step).classList.remove('hidden');
+
+                // Animation for app content
+                const content = document.getElementById('app-step-content');
+                content.classList.remove('fade-in');
+                void content.offsetWidth;
+                content.classList.add('fade-in');
+                
+                // Scroll to top of app content
+                content.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function updateOrgSelectors() {
+            // Mock logic to simulate tree node extraction for selectors
+            // In a real app, this would crawl the DOM or state
+            console.log("Updating organization selectors based on Step 2 config...");
+        }
+
+        function addTreeNode(level) {
+            alert('演示模式：已为您动态新增一个 ' + level + ' 级组织节点。');
+            // This would normally append HTML to the tree containers
+        }
+
+        function addEmployee(platform) {
+            const listId = platform === 'web' ? 'web-employee-list' : 'app-employee-list';
+            const list = document.getElementById(listId);
+            const firstItem = list.children[0];
+            const newItem = firstItem.cloneNode(true);
+            
+            // Clear inputs in new item
+            const inputs = newItem.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+            
+            list.appendChild(newItem);
+            
+            // Auto scroll to bottom of the new item
+            newItem.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    </script>
+</body>
+</html>
